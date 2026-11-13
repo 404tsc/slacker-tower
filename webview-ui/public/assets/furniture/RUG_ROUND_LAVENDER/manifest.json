@@ -1,0 +1,13 @@
+{
+  "id": "RUG_ROUND_LAVENDER",
+  "name": "Round Rug Lavender",
+  "category": "decor",
+  "type": "asset",
+  "canPlaceOnWalls": false,
+  "canPlaceOnSurfaces": false,
+  "backgroundTiles": 3,
+  "width": 64,
+  "height": 48,
+  "footprintW": 4,
+  "footprintH": 3
+}

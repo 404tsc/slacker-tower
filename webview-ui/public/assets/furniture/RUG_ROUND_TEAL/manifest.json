@@ -1,0 +1,13 @@
+{
+  "id": "RUG_ROUND_TEAL",
+  "name": "Round Rug Teal",
+  "category": "decor",
+  "type": "asset",
+  "canPlaceOnWalls": false,
+  "canPlaceOnSurfaces": false,
+  "backgroundTiles": 5,
+  "width": 112,
+  "height": 80,
+  "footprintW": 7,
+  "footprintH": 5
+}

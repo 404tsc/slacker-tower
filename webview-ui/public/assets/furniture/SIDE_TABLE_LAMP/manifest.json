@@ -1,0 +1,13 @@
+{
+  "id": "SIDE_TABLE_LAMP",
+  "name": "Side Table Lamp",
+  "category": "decor",
+  "type": "asset",
+  "canPlaceOnWalls": false,
+  "canPlaceOnSurfaces": false,
+  "backgroundTiles": 1,
+  "width": 16,
+  "height": 32,
+  "footprintW": 1,
+  "footprintH": 2
+}

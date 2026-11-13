@@ -1,0 +1,13 @@
+{
+  "id": "POOL",
+  "name": "Swimming Pool",
+  "category": "misc",
+  "type": "asset",
+  "canPlaceOnWalls": false,
+  "canPlaceOnSurfaces": false,
+  "backgroundTiles": 0,
+  "width": 160,
+  "height": 96,
+  "footprintW": 10,
+  "footprintH": 6
+}

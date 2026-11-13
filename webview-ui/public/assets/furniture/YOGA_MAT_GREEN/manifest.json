@@ -1,0 +1,13 @@
+{
+  "id": "YOGA_MAT_GREEN",
+  "name": "Yoga Mat Green",
+  "category": "misc",
+  "type": "asset",
+  "canPlaceOnWalls": false,
+  "canPlaceOnSurfaces": false,
+  "backgroundTiles": 2,
+  "width": 16,
+  "height": 32,
+  "footprintW": 1,
+  "footprintH": 2
+}

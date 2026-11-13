@@ -1,0 +1,13 @@
+{
+  "id": "RUG_ROUND_CREAM",
+  "name": "Round Rug Cream",
+  "category": "decor",
+  "type": "asset",
+  "canPlaceOnWalls": false,
+  "canPlaceOnSurfaces": false,
+  "backgroundTiles": 5,
+  "width": 96,
+  "height": 80,
+  "footprintW": 6,
+  "footprintH": 5
+}

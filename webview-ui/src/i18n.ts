@@ -457,6 +457,7 @@ const NAMES: Record<string, { en: string; de: string }> = {
   健身房: { en: 'Gym', de: 'Fitnessraum' },
   泳池: { en: 'Pool', de: 'Pool' },
   卧室: { en: 'Bedroom', de: 'Schlafzimmer' },
+  猫舍: { en: 'Cattery', de: 'Katzenzimmer' },
   // floors
   办公室: { en: 'Office', de: 'Büro' },
   '健身·泳池': { en: 'Gym · Pool', de: 'Fitness · Pool' },

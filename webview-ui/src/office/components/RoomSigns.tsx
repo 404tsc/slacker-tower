@@ -20,6 +20,7 @@ const ROOM_EMOJI: Record<string, string> = {
   健身房: '🏋️',
   泳池: '🏊',
   电梯厅: '🛗',
+  猫舍: '🐱',
 };
 
 function roomEmoji(label: string): string | undefined {

@@ -2,7 +2,7 @@
   "name": "slacker-tower",
   "displayName": "Slacker Tower 摸鱼大厦",
   "description": "A three-storey pixel-art tower where your Claude Code agents work, eat, swim, work out and nap — fun to watch while you zone out. Fork of Pixel Agents.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "slacker-tower",
   "repository": {
     "type": "git",

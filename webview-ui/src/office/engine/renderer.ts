@@ -1,5 +1,6 @@
 import type { ColorValue } from '../../components/ui/types.js';
 import {
+  ANTIC_COLORS,
   AREA_ACTIVE_ALPHA_MULTIPLIER,
   AREA_LABEL_ALPHA,
   AREA_LABEL_FALLBACK_COLOR,
@@ -69,7 +70,9 @@ import { CharacterState, Direction, TILE_SIZE, TileType } from '../types.js';
 import { getWallInstances, hasWallSprites, wallColorToHex } from '../wallTiles.js';
 import { getCharacterSprite } from './characters.js';
 import { renderMatrixEffect } from './matrixEffect.js';
+import { getAntics } from './petAntics.js';
 import { getPetSpriteData } from './petEntity.js';
+import { personalityOf } from './petPersonality.js';
 
 // ── Settings ────────────────────────────────────────────────────
 
@@ -377,6 +380,79 @@ function getSleepingHead(frame: SpriteData): SpriteData {
   return head;
 }
 
+/**
+ * A cartoon scuffle: a bouncing heap of dust puffs (blocky, pixel-sized) with
+ * paws flailing out of it. (x, y) is the world point it sits on.
+ */
+function drawScuffleCloud(
+  c: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  t: number,
+  seed: number,
+  offsetX: number,
+  offsetY: number,
+  zoom: number,
+): void {
+  const px = (wx: number, wy: number, w: number, h: number) =>
+    c.fillRect(
+      Math.round(offsetX + wx * zoom),
+      Math.round(offsetY + wy * zoom),
+      Math.ceil(w * zoom),
+      Math.ceil(h * zoom),
+    );
+  const disc = (cx: number, cy: number, r: number) => {
+    for (let dy = -r; dy <= r; dy++) {
+      const half = Math.round(Math.sqrt(r * r - dy * dy));
+      px(cx - half, cy + dy, half * 2, 1);
+    }
+  };
+  const bounce = Math.abs(Math.sin(t * 9)) * 2;
+  const baseY = y - 9 - bounce;
+  const puffs = Array.from({ length: 6 }, (_, i) => {
+    const a = (i / 6) * Math.PI * 2 + t * 4 + seed;
+    return {
+      x: Math.round(x + Math.cos(a) * 9),
+      y: Math.round(baseY + Math.sin(a) * 4),
+      r: 7 + ((i + Math.floor(t * 8)) % 2),
+    };
+  });
+  // outline, then body, then shading
+  c.fillStyle = ANTIC_COLORS.cloudEdge;
+  for (const p of puffs) disc(p.x, p.y, p.r + 2);
+  c.fillStyle = ANTIC_COLORS.cloud;
+  for (const p of puffs) disc(p.x, p.y, p.r);
+  c.fillStyle = ANTIC_COLORS.cloudShade;
+  for (const p of puffs) px(p.x - 2, p.y + p.r - 2, 4, 1);
+  // paws and tails flailing out of the cloud, switching every few frames
+  for (let i = 0; i < 3; i++) {
+    const a = seed * 3 + i * 2.1 + Math.floor(t * 6) * 2.3;
+    const reach = 17 + (i % 2) * 3;
+    const ex = Math.round(x + Math.cos(a) * reach);
+    const ey = Math.round(baseY + Math.sin(a) * reach * 0.55);
+    // a little arm back into the cloud
+    const mx = Math.round(x + Math.cos(a) * (reach - 5));
+    const my = Math.round(baseY + Math.sin(a) * (reach - 5) * 0.55);
+    c.fillStyle = ANTIC_COLORS.cloudEdge;
+    px(mx - 2, my - 2, 5, 5);
+    px(ex - 3, ey - 3, 7, 7);
+    c.fillStyle = i % 2 ? ANTIC_COLORS.pawB : ANTIC_COLORS.pawA;
+    px(mx - 1, my - 1, 3, 3);
+    px(ex - 2, ey - 2, 5, 5);
+    c.fillStyle = ANTIC_COLORS.pawPad;
+    px(ex - 1, ey, 3, 2);
+  }
+  // speed lines
+  c.fillStyle = ANTIC_COLORS.speed;
+  if (Math.floor(t * 10) % 2 === 0) {
+    px(x - 16, baseY - 3, 4, 1);
+    px(x + 13, baseY + 2, 4, 1);
+  } else {
+    px(x - 15, baseY + 3, 3, 1);
+    px(x + 12, baseY - 4, 3, 1);
+  }
+}
+
 /** Rows of a character sprite shown above the water while swimming. */
 const SWIM_ROWS = SLEEP_HEAD_ROWS + 3;
 /** Walk-cycle frame time on the treadmill (a bit faster than walking). */
@@ -553,24 +629,42 @@ export function renderScene(
 
   // ── Pets ──────────────────────────────────────────────
   for (const pet of pets) {
+    if (pet.hidden) continue; // rolled up in a scuffle's dust cloud
     const petSprites = getPetSprites(pet.petType);
     const spriteData = getPetSpriteData(pet, petSprites);
     if (!spriteData) continue;
 
     const cached = getCachedSprite(spriteData, zoom);
+    // The bunny hops: an arc over each step
+    const hop =
+      pet.moveProgress > 0 && personalityOf(pet).hops
+        ? Math.sin(pet.moveProgress * Math.PI) * 3
+        : 0;
     // Anchor at bottom-center at (pet.x, pet.y) — round to integer device pixels
     const drawX = Math.round(offsetX + pet.x * zoom - cached.width / 2);
-    const drawY = Math.round(offsetY + pet.y * zoom - cached.height);
+    const drawY = Math.round(offsetY + (pet.y - hop) * zoom - cached.height);
 
     // Z-sort key: matches the chair/character "row boundary" formula.
     // pet.y is the pixel center, so + TILE_SIZE/2 lifts us to the row's bottom edge.
-    const petZY = pet.y + TILE_SIZE / 2;
+    // Curled up on a bed: just in front of the bed.
+    const petZY = pet.perch ? pet.perch.zY : pet.y + TILE_SIZE / 2;
 
     drawables.push({
       zY: petZY,
       draw: (c) => {
         c.drawImage(cached, drawX, drawY);
       },
+    });
+  }
+
+  // ── Pet scuffles: a rolling dust cloud with paws poking out ──
+  for (const s of getAntics()) {
+    if (s.phase !== 'brawl') continue;
+    const scuffle = s;
+    drawables.push({
+      zY: scuffle.y + TILE_SIZE / 2 + 1,
+      draw: (c) =>
+        drawScuffleCloud(c, scuffle.x, scuffle.y, scuffle.t, scuffle.seed, offsetX, offsetY, zoom),
     });
   }
 

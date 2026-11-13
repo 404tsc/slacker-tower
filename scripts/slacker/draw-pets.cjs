@@ -243,8 +243,128 @@ const panda = {
   right: [pandaSide(0), pandaSide(1), pandaSide(2)],
 };
 
+// ── cats (2026-11-13): a Maine Coon and a Dragon Li (狸花猫) ─────────────────
+// One drawer, two looks: the Maine Coon is big and fluffy (ruff, ear tufts,
+// bushy tail), the Dragon Li short-haired with bold mackerel stripes.
+const LIHUA = {
+  O: [52, 44, 40], B: [150, 130, 98], L: [192, 174, 138], D: [72, 60, 48], C: [218, 204, 172],
+  E: [150, 204, 64], P: [218, 140, 142], K: [30, 26, 24],
+  big: false,
+};
+// a black Maine Coon: black coat, smoky-grey ruff and tufts, golden eyes
+const MAINE = {
+  O: [14, 12, 16], B: [44, 42, 50], L: [88, 86, 100], D: [30, 28, 34], C: [128, 126, 142],
+  E: [240, 190, 58], P: [176, 112, 120], K: [10, 8, 10],
+  big: true,
+};
+function catFront(C, { legs = 0, back = false, blink = false, tail = 0, sit = false, look = 0 } = {}) {
+  const g = canvas(16, 32);
+  const big = C.big;
+  const y = sit ? 1 : 0;
+  const bodyRx = big ? 5.2 : 4.2;
+  // tail curling up beside the body (behind it)
+  const tx = 12 + tail;
+  for (let k = 0; k < (big ? 7 : 6); k++) g.rect(tx + (k > 3 ? 1 : 0), 28 - k + y, big ? 3 : 2, 1, k % 3 === 1 ? C.D : C.B);
+  g.ellipse(8, 26 + y, bodyRx, big ? 4.3 : 3.7, C.B); // body
+  // stripes along the sides
+  for (const sy of [24, 26.5]) {
+    g.rect(Math.round(8 - bodyRx) + 1, Math.round(sy + y), 2, 1, C.D);
+    g.rect(Math.round(8 + bodyRx) - 3, Math.round(sy + y), 2, 1, C.D);
+  }
+  if (!back) {
+    // chest: the Maine Coon's big white ruff, the Dragon Li's pale bib
+    if (big) {
+      g.ellipse(8, 24 + y, 3.6, 2.6, C.C);
+      g.px(5, 25 + y, C.C); g.px(11, 25 + y, C.C);
+    } else g.ellipse(8, 25 + y, 2.2, 2.4, C.C);
+  } else {
+    g.rect(7, 22 + y, 2, 6, C.D); // spine stripe
+  }
+  // front legs (alternate lifting when walking)
+  g.rect(5, 28 - (legs === 1 ? 1 : 0), 2, 3 + (legs === 1 ? 1 : 0) - y, C.B);
+  g.rect(9, 28 - (legs === 2 ? 1 : 0), 2, 3 + (legs === 2 ? 1 : 0) - y, C.B);
+  g.rect(5, 30, 2, 1, C.L); g.rect(9, 30, 2, 1, C.L);
+  // head
+  const hy = 19.5 + y;
+  const hx = 8 + look * 0.5;
+  g.ellipse(hx, hy, big ? 4.6 : 4, big ? 3.8 : 3.4, C.B);
+  // ears: triangles, pink inside; tufts on the Maine Coon
+  for (const [ex, dir] of [[hx - 3, -1], [hx + 3, 1]]) {
+    for (let k = 0; k < 4; k++) g.rect(Math.round(ex - (dir < 0 ? 0 : 3 - k) + (dir < 0 ? 0 : 0)), Math.round(hy - 3 - k), 4 - k, 1, C.B);
+    if (!back) g.px(Math.round(ex + (dir < 0 ? 1 : -1)), Math.round(hy - 4), C.P);
+    if (big) { g.px(Math.round(ex + (dir < 0 ? 0 : 0)), Math.round(hy - 7), C.D); g.px(Math.round(ex), Math.round(hy - 8), C.D); }
+  }
+  if (back) {
+    g.rect(Math.round(hx) - 2, Math.round(hy) - 2, 4, 1, C.D); // stripes on the back of the head
+    g.rect(Math.round(hx) - 1, Math.round(hy), 2, 1, C.D);
+  } else {
+    // tabby "M" on the forehead
+    g.px(Math.round(hx) - 2, Math.round(hy) - 2, C.D); g.px(Math.round(hx) - 1, Math.round(hy) - 1, C.D);
+    g.px(Math.round(hx), Math.round(hy) - 2, C.D); g.px(Math.round(hx) + 1, Math.round(hy) - 1, C.D);
+    g.px(Math.round(hx) + 2, Math.round(hy) - 2, C.D);
+    // eyes
+    const ey = Math.round(hy);
+    if (blink) { g.rect(Math.round(hx) - 3, ey, 2, 1, C.K); g.rect(Math.round(hx) + 1, ey, 2, 1, C.K); }
+    else {
+      g.rect(Math.round(hx) - 3, ey - 1 + 1, 2, 2, C.E); g.px(Math.round(hx) - 2, ey, C.K);
+      g.rect(Math.round(hx) + 1, ey, 2, 2, C.E); g.px(Math.round(hx) + 2, ey, C.K);
+    }
+    // muzzle, nose
+    g.rect(Math.round(hx) - 1, ey + 2, 3, 1, C.L);
+    g.px(Math.round(hx), ey + 2, C.P);
+    if (big) { g.px(Math.round(hx) - 4, ey + 2, C.C); g.px(Math.round(hx) + 4, ey + 2, C.C); } // cheek fluff
+  }
+  g.outline(C.O);
+  return g;
+}
+function catSide(C, phase) {
+  const g = canvas(32, 32);
+  const big = C.big;
+  const bob = phase === 1 ? -1 : 0;
+  const legs = phase === 0 ? [0, 1, 0, 1] : phase === 1 ? [0, 0, 0, 0] : [1, 0, 1, 0];
+  [[8, 0], [11, 1], [19, 2], [22, 3]].forEach(([x, i]) => {
+    g.rect(x, 26 - legs[i] + bob, 2, 5, i % 2 ? C.D : C.B);
+    g.rect(x, 30 - legs[i], 2, 1, C.L);
+  });
+  g.ellipse(15, 23 + bob, big ? 9.5 : 8.5, big ? 4.6 : 3.9, C.B); // body
+  for (const sx of [10, 13, 16, 19]) g.rect(sx, 20 + bob, 1, big ? 4 : 3, C.D); // stripes
+  g.rect(8, 26 + bob, 14, 1, C.L); // belly
+  // tail: up and curling, bushy on the Maine Coon
+  for (let k = 0; k < 9; k++) {
+    const x = 6 - Math.min(k, 4) + (k > 6 ? k - 6 : 0);
+    g.rect(x, 22 - k + bob, big ? 3 : 2, 1, k % 3 === 0 ? C.D : C.B);
+  }
+  // head
+  const hx = big ? 25 : 24.5;
+  g.ellipse(hx, 18 + bob, big ? 4.6 : 4, big ? 4 : 3.5, C.B);
+  if (big) g.ellipse(hx - 2, 21 + bob, 2.6, 2.4, C.C); // ruff
+  for (let k = 0; k < 4; k++) g.rect(hx - 2 + Math.floor(k / 2), 14 - k + bob, 3 - Math.floor(k / 1.5), 1, C.B); // ear
+  if (big) g.px(hx - 1, 10 + bob, C.D); // ear tuft
+  g.px(hx - 1, 13 + bob, C.P);
+  g.rect(hx + 1, 17 + bob, 2, 2, C.E); g.px(hx + 2, 17 + bob, C.K); // eye
+  g.px(hx + 4, 19 + bob, C.P); // nose
+  g.rect(hx - 3, 16 + bob, 2, 1, C.D); // cheek stripe
+  g.outline(C.O);
+  return g;
+}
+function catFrames(C) {
+  return {
+    down: [catFront(C, { legs: 1 }), catFront(C), catFront(C, { legs: 2 })],
+    idleDown: [catFront(C, { sit: true }), catFront(C, { sit: true, tail: 1, look: 1 }), catFront(C, { sit: true, blink: true })],
+    up: [catFront(C, { back: true, legs: 1 }), catFront(C, { back: true }), catFront(C, { back: true, legs: 2 })],
+    idleUp: [catFront(C, { back: true, sit: true }), catFront(C, { back: true, sit: true, tail: 1 }), catFront(C, { back: true, sit: true })],
+    right: [catSide(C, 0), catSide(C, 1), catSide(C, 2)],
+  };
+}
+
 const OUT = path.join(process.argv[2] || path.join(__dirname, '..', '..', 'webview-ui', 'public'), 'assets', 'pets');
-for (const [id, name, frames] of [['bunny', '小兔子', rabbit], ['elephant', '小象', elephant], ['panda', '熊猫', panda]]) {
+for (const [id, name, frames] of [
+  ['bunny', '小兔子', rabbit],
+  ['elephant', '小象', elephant],
+  ['panda', '熊猫', panda],
+  ['lihua', '狸花猫', catFrames(LIHUA)],
+  ['mainecoon', '缅因猫', catFrames(MAINE)],
+]) {
   const dir = path.join(OUT, id);
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, 'pet.png'), sheet(frames));

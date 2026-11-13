@@ -317,6 +317,16 @@ export interface Pet {
   petType: number;
   /** Seconds spent waiting for someone to clear the next tile (occupancy.ts) */
   blockedTimer?: number;
+  /** Rolled up in a scuffle's dust cloud: not drawn (petAntics.ts) */
+  hidden?: boolean;
+  /** Curled up on top of furniture (the cat on a bed): drawn here instead of its tile */
+  perch?: { x: number; y: number; zY: number } | null;
+  /** Walking to a bed to hop onto at this tile */
+  pendingPerch?: { col: number; row: number; perch?: { x: number; y: number; zY: number } } | null;
+  /** Mid-walk stop (sniffing, hopping) — seconds left */
+  pauseTimer?: number;
+  /** Seconds until the next look around while idle */
+  lookTimer?: number;
   state: PetState;
   dir: Direction;
   /** Pixel position (bottom-center anchor). */

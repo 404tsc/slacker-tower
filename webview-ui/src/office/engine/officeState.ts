@@ -45,7 +45,10 @@ import { setBuilding } from './building.js';
 import { createCharacter, updateCharacter } from './characters.js';
 import { advanceMatrixEffect, startMatrixEffect } from './matrixEffectState.js';
 import { claimTile, resetOccupancy } from './occupancy.js';
+import { pruneAntics, updateAntics } from './petAntics.js';
 import { createPet, updatePet } from './petEntity.js';
+import type { PetFavorites } from './petPersonality.js';
+import { buildPetFavorites } from './petPersonality.js';
 import {
   isRole,
   rememberedRoleSeat,
@@ -129,6 +132,9 @@ export class OfficeState {
    *  overlay's per-frame updates stop re-centering. Reset on spawn/despawn. */
   private greeterCameraCancelled = false;
 
+  /** Where each kind of pet likes to go (petPersonality.ts) */
+  petFavorites: PetFavorites = new Map();
+
   /** Names of the user-defined Directories: each one is a role. */
   roleNames: ReadonlySet<string> = new Set();
 
@@ -148,6 +154,7 @@ export class OfficeState {
     this.blockedTiles = getBlockedTiles(this.layout.furniture);
     this.furniture = layoutToFurnitureInstances(this.layout.furniture);
     this.walkableTiles = getWalkableTiles(this.tileMap, this.blockedTiles);
+    this.petFavorites = buildPetFavorites(this.layout, this.tileMap, this.blockedTiles);
     // Pets are built last because they need walkableTiles populated for spawn.
     this.rebuildPetsFromLayout(this.layout);
   }
@@ -162,6 +169,7 @@ export class OfficeState {
     this.blockedTiles = getBlockedTiles(layout.furniture);
     this.rebuildFurnitureInstances();
     this.walkableTiles = getWalkableTiles(this.tileMap, this.blockedTiles);
+    this.petFavorites = buildPetFavorites(layout, this.tileMap, this.blockedTiles);
 
     // Shift character positions when grid expands left/up
     if (shift && (shift.col !== 0 || shift.row !== 0)) {
@@ -1264,7 +1272,15 @@ export class OfficeState {
 
     // ── Pet FSM ────────────────────────────────────────────────
     for (const pet of this.pets) {
-      updatePet(pet, dt, this.walkableTiles, this.characters, this.tileMap, this.blockedTiles);
+      updatePet(
+        pet,
+        dt,
+        this.walkableTiles,
+        this.characters,
+        this.tileMap,
+        this.blockedTiles,
+        this.petFavorites,
+      );
 
       // Tick heart bubble timer (mirrors character waiting-bubble pattern)
       if (pet.bubbleType) {
@@ -1275,6 +1291,18 @@ export class OfficeState {
         }
       }
     }
+
+    // Pets bumping into each other: scuffles and cuddles
+    pruneAntics(this.pets);
+    const standing = new Set<string>();
+    for (const w of [...this.characters.values(), ...this.pets])
+      standing.add(`${w.tileCol},${w.tileRow}`);
+    updateAntics(
+      this.pets,
+      dt,
+      { tileMap: this.tileMap, blockedTiles: this.blockedTiles, walkableTiles: this.walkableTiles },
+      standing,
+    );
   }
 
   /** The `saveAgentSeats` payload: palette, hue and seat for every agent worth

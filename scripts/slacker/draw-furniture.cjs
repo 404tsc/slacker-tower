@@ -1051,6 +1051,133 @@ single('PUNCHING_BAG', 'Punching Bag', 'misc', punchingBag(), 1, 2, 1);
 single('POOL', 'Swimming Pool', 'misc', pool(10, 6), 10, 6, 0);
 single('LOUNGER', 'Sun Lounger', 'misc', lounger(), 1, 2, 0);
 
+// ── cattery (2026-11-13, 猫舍) ───────────────────────────────────────────────
+const CT = {
+  O: [62, 44, 40],
+  post: [214, 190, 150], // sisal rope
+  postD: [176, 150, 108],
+  plat: [180, 120, 84], // carpeted platforms
+  platL: [208, 150, 108],
+  platD: [140, 88, 60],
+  pinkL: [252, 196, 210],
+  pink: [236, 150, 174],
+  pinkD: [196, 106, 134],
+  blueL: [176, 214, 244],
+  blue: [116, 170, 222],
+  blueD: [80, 124, 182],
+  cream: [246, 238, 220],
+  creamD: [222, 208, 184],
+  bowlR: [226, 88, 82],
+  bowlB: [92, 150, 214],
+  kibble: [168, 110, 60],
+  water: [150, 210, 244],
+  litter: [204, 196, 176],
+  litterD: [176, 166, 144],
+  yarn: [236, 120, 150],
+  yarnD: [190, 80, 112],
+  shadow: [196, 184, 226],
+};
+
+/**
+ * Cat tree: 2 wide x 3 tall, against the wall. Cats perch on the top
+ * platform (y≈11) and the middle one (y≈27) — see petPersonality.ts.
+ */
+function catTree() {
+  const g = img(32, 48);
+  g.rect(3, 45, 26, 3, CT.shadow);
+  // sisal posts
+  for (const x of [6, 22]) {
+    g.box(x, 10, 5, 36, CT.post, CT.O);
+    for (let y = 12; y < 45; y += 3) g.hl(x + 1, y, 3, CT.postD);
+  }
+  // base
+  g.box(1, 42, 30, 5, CT.plat, CT.O);
+  g.hl(2, 43, 28, CT.platL);
+  // middle platform + cubby
+  g.box(14, 22, 17, 8, CT.plat, CT.O);
+  g.hl(15, 23, 15, CT.platL);
+  g.box(15, 29, 15, 10, CT.platD, CT.O);
+  g.ellipse(22.5, 35, 4, 3.5, CT.O); // cubby hole
+  // top platform
+  g.box(1, 6, 22, 7, CT.plat, CT.O);
+  g.hl(2, 7, 20, CT.platL);
+  g.hl(2, 11, 20, CT.platD);
+  // dangling toy mouse on a string
+  g.vl(3, 13, 9, CT.O);
+  g.box(1, 21, 5, 4, CT.creamD, CT.O);
+  g.px(0, 23, CT.pink);
+  return g;
+}
+
+/** Round cushion bed (1x1). Cats curl up in it. */
+function catBed(main, light, dark) {
+  const g = img(16, 16);
+  g.rect(2, 13, 12, 3, CT.shadow);
+  g.ellipse(8, 9.5, 7.5, 5.5, dark, CT.O);
+  g.ellipse(8, 9, 6.2, 4.3, main);
+  g.ellipse(8, 10, 4.2, 2.6, light); // the dip
+  g.hl(4, 6, 8, light);
+  return g;
+}
+
+function scratchPost() {
+  // 1x2: a sisal post on a base with a ball on top
+  const g = img(16, 32);
+  g.rect(2, 29, 12, 3, CT.shadow);
+  g.box(1, 27, 14, 4, CT.plat, CT.O);
+  g.hl(2, 28, 12, CT.platL);
+  g.box(5, 6, 6, 22, CT.post, CT.O);
+  for (let y = 8; y < 27; y += 3) g.hl(6, y, 4, CT.postD);
+  g.ellipse(8, 4, 3.5, 3.5, CT.pink, CT.O);
+  g.px(7, 3, CT.pinkL);
+  return g;
+}
+
+function catBowls() {
+  // 1x1: food and water
+  const g = img(16, 16);
+  g.rect(1, 13, 14, 2, CT.shadow);
+  g.box(1, 7, 7, 6, CT.bowlR, CT.O);
+  g.rect(2, 8, 5, 2, CT.kibble);
+  g.px(3, 8, CT.cream);
+  g.box(8, 7, 7, 6, CT.bowlB, CT.O);
+  g.rect(9, 8, 5, 2, CT.water);
+  g.px(10, 8, CT.cream);
+  return g;
+}
+
+function litterBox() {
+  const g = img(16, 16);
+  g.rect(1, 13, 14, 3, CT.shadow);
+  g.box(0, 5, 16, 10, CT.blue, CT.O);
+  g.rect(2, 6, 12, 4, CT.litter);
+  for (const [x, y] of [[4, 7], [9, 8], [11, 6]]) g.px(x, y, CT.litterD);
+  g.hl(1, 11, 14, CT.blueD);
+  g.box(6, 1, 5, 5, CT.creamD, CT.O); // scoop
+  return g;
+}
+
+function yarnBall() {
+  // lies on the floor (walkable decoration)
+  const g = img(16, 16);
+  g.ellipse(7, 10, 4.5, 4.5, CT.yarn, CT.O);
+  g.hl(4, 9, 6, CT.yarnD);
+  g.hl(5, 11, 5, CT.yarnD);
+  g.px(5, 7, CT.pinkL);
+  // loose thread
+  g.hl(11, 13, 4, CT.yarnD);
+  g.px(15, 12, CT.yarnD);
+  return g;
+}
+
+single('CAT_TREE', 'Cat Tree', 'misc', catTree(), 2, 3, 2);
+single('CAT_BED_PINK', 'Cat Bed Pink', 'misc', catBed(CT.pink, CT.pinkL, CT.pinkD), 1, 1, 0);
+single('CAT_BED_BLUE', 'Cat Bed Blue', 'misc', catBed(CT.blue, CT.blueL, CT.blueD), 1, 1, 0);
+single('SCRATCH_POST', 'Scratching Post', 'misc', scratchPost(), 1, 2, 1);
+single('CAT_BOWLS', 'Cat Bowls', 'misc', catBowls(), 1, 1, 0);
+single('LITTER_BOX', 'Litter Box', 'misc', litterBox(), 1, 1, 0);
+single('YARN_BALL', 'Yarn Ball', 'decor', yarnBall(), 1, 1, 1);
+
 // replace only our own items: the built-in furniture lives in the same folder
 for (const it of items) fs.rmSync(path.join(OUT, it.id), { recursive: true, force: true });
 for (const it of items) {

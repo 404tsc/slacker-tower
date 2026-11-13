@@ -650,3 +650,14 @@ export function facadeSkyColors(hour: number): { top: string; bottom: string; ni
   if (hour >= 18) return { top: '#4a5aa8', bottom: '#f09a70', night: false };
   return { top: '#5aa8e8', bottom: '#bfe4f8', night: false };
 }
+
+// ── Pet scuffles (petAntics.ts) ──────────────────────────────
+export const ANTIC_COLORS = {
+  cloud: '#f4f2ee',
+  cloudShade: '#d6d2cc',
+  cloudEdge: '#4a4658',
+  pawA: '#a87048',
+  pawB: '#9a9cb0',
+  pawPad: '#f0b4b4',
+  speed: '#ffffff',
+} as const;

@@ -33,6 +33,7 @@ import { useMobileShell } from './mobile/useMobileShell.js';
 import { BreakReminder } from './office/components/BreakReminder.js';
 import { FloorNav } from './office/components/FloorNav.js';
 import { OfficeCanvas } from './office/components/OfficeCanvas.js';
+import { PetAntics } from './office/components/PetAntics.js';
 import { RoomSigns } from './office/components/RoomSigns.js';
 import { TeamPanel } from './office/components/TeamPanel.js';
 import { ToolOverlay } from './office/components/ToolOverlay.js';
@@ -604,6 +605,12 @@ function App() {
             alwaysShowOverlay={alwaysShowOverlay}
           />
           <RoomSigns
+            officeState={officeState}
+            containerRef={containerRef}
+            zoom={editor.zoom}
+            panRef={editor.panRef}
+          />
+          <PetAntics
             officeState={officeState}
             containerRef={containerRef}
             zoom={editor.zoom}
